@@ -28,11 +28,13 @@ def preprocess_for_telegram(paragraph: str) -> str:
     return str(soup)
 
 
-def format_daf(d: date) -> str:
+def format_daf(d: date) -> list[str]:
     daf = get_daf(d)
     if daf is None:
         raise ValueError(f"No daf found for the date: {d}")
     book = load_sefaria_tractate(daf.tractate)
+    messages: list[str] = []
+
     paragraphs: list[str] = []
 
     if daf.page == daf.tractate.start_page:
@@ -46,7 +48,10 @@ def format_daf(d: date) -> str:
             2 * (daf.page - 1) + (0 if subpage == "a" else 1)
         ]
         paragraphs.extend(preprocess_for_telegram(p) for p in subpage_paragraphs)
-    return "\n\n".join(paragraphs)
+
+        messages.append("\n\n".join(paragraphs))
+        paragraphs.clear()
+    return messages
 
 
 async def main() -> None:
@@ -54,14 +59,15 @@ async def main() -> None:
     channel_id = os.environ["CHANNEL_ID"]
     d = date.today()
     print(f"Reading daf for today: {d}")
-    message = format_daf(date.today())
-    print(f"Sending daf: {message[:128]}...")
-    await bot.send_message(
-        chat_id=channel_id,
-        text=message,
-        parse_mode="HTML",
-        disable_web_page_preview=True,
-    )
+    message_texts = format_daf(date.today())
+    print(f"Sending daf: {message_texts[:128]}...")
+    for text in message_texts:
+        await bot.send_message(
+            chat_id=channel_id,
+            text=text,
+            parse_mode="HTML",
+            disable_web_page_preview=True,
+        )
     print("Done!")
 
 
