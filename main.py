@@ -12,6 +12,9 @@ TELEGRAM_ALLOWED_TAGS = ["b", "i", "u", "s", "a"]
 TELEGRAM_TAG_MAPPING = {
     "strong": "u",
 }
+TELEGRAM_CHAR_MAPPING = {
+    "§": "➡️",
+}
 
 
 def preprocess_for_telegram(paragraph: str) -> str:
@@ -25,7 +28,10 @@ def preprocess_for_telegram(paragraph: str) -> str:
         if mapped_tag_name is None:
             raise ValueError(f"No mapping exists for tag: {tag.name}")
         tag.name = mapped_tag_name
-    return str(soup)
+    processed = str(soup)
+    for old, new in TELEGRAM_CHAR_MAPPING.items():
+        processed.replace(old, new)
+    return processed
 
 
 def format_daf(d: date) -> list[str]:
@@ -60,7 +66,7 @@ async def main() -> None:
     d = date.today()
     print(f"Reading daf for today: {d}")
     message_texts = format_daf(date.today())
-    print(f"Sending daf: {message_texts[:128]}...")
+    print(f"Sending daf: {message_texts[0][:128]}...")
     for text in message_texts:
         await bot.send_message(
             chat_id=channel_id,
