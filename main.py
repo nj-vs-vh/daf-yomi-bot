@@ -18,7 +18,7 @@ TELEGRAM_CHAR_MAPPING = {
 }
 
 
-def preprocess_for_telegram(paragraph: str) -> str:
+def preprocess_paragraph(paragraph: str) -> str:
     soup = bs4.BeautifulSoup(paragraph, features="html.parser")
     for tag in soup.descendants:
         if not isinstance(tag, bs4.Tag):
@@ -51,10 +51,12 @@ def format_daf(d: date) -> list[str]:
     for subpage in ("a", "b"):
         url = daf.url(subpage)  # type: ignore
         paragraphs.append(f'📜 <a href="{url}">{daf.page}{subpage}</a>')
-        subpage_paragraphs = book["text"][
-            2 * (daf.page - 1) + (0 if subpage == "a" else 1)
-        ]
-        paragraphs.extend(preprocess_for_telegram(p) for p in subpage_paragraphs)
+        raw_paragraphs = book["text"][2 * (daf.page - 1) + (0 if subpage == "a" else 1)]
+
+        split_paragraphs: list[str] = []
+        for p in raw_paragraphs:
+            split_paragraphs.extend(p.split("<br/>"))
+        paragraphs.extend(preprocess_paragraph(p) for p in split_paragraphs)
 
         messages.append("\n\n".join(paragraphs))
         paragraphs.clear()

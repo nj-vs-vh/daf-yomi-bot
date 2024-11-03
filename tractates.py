@@ -12,6 +12,9 @@ class Tractate:
     start_page: int
     url: str
 
+    def __str__(self) -> str:
+        return f"{self.name} ({self.start_date} - {self.end_date})"
+
 
 tractates = [
     Tractate(
