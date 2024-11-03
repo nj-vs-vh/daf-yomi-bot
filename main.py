@@ -30,7 +30,7 @@ def preprocess_for_telegram(paragraph: str) -> str:
         tag.name = mapped_tag_name
     processed = str(soup)
     for old, new in TELEGRAM_CHAR_MAPPING.items():
-        processed.replace(old, new)
+        processed = processed.replace(old, new)
     return processed
 
 
