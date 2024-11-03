@@ -52,8 +52,17 @@ def format_daf(d: date) -> str:
 async def main() -> None:
     bot = AsyncTeleBot(token=os.environ["TOKEN"])
     channel_id = os.environ["CHANNEL_ID"]
+    d = date.today()
+    print(f"Reading daf for today: {d}")
     message = format_daf(date.today())
-    await bot.send_message(chat_id=channel_id, text=message)
+    print(f"Sending daf: {message[:128]}...")
+    await bot.send_message(
+        chat_id=channel_id,
+        text=message,
+        parse_mode="HTML",
+        disable_web_page_preview=True,
+    )
+    print("Done!")
 
 
 if __name__ == "__main__":
