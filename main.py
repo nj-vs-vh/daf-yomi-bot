@@ -3,7 +3,8 @@ import os
 from datetime import date
 
 import bs4  # type: ignore
-from telebot import AsyncTeleBot  # type: ignore
+from telebot import AsyncTeleBot
+from telebot.util import smart_split
 
 from sefaria import load_sefaria_tractate
 from tractates import get_daf
@@ -68,12 +69,14 @@ async def main() -> None:
     message_texts = format_daf(date.today())
     print(f"Sending daf: {message_texts[0][:128]}...")
     for text in message_texts:
-        await bot.send_message(
-            chat_id=channel_id,
-            text=text,
-            parse_mode="HTML",
-            disable_web_page_preview=True,
-        )
+        for text_part in smart_split(text):
+            await bot.send_message(
+                chat_id=channel_id,
+                text=text_part,
+                parse_mode="HTML",
+                disable_web_page_preview=True,
+            )
+            await asyncio.sleep(1)
     print("Done!")
 
 
