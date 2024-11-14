@@ -3,6 +3,7 @@ import os
 from datetime import date
 
 import bs4  # type: ignore
+import pyluach.dates  # type: ignore
 from telebot import AsyncTeleBot
 from telebot.util import smart_split
 
@@ -47,7 +48,17 @@ def format_daf(d: date) -> list[str]:
     if daf.page == daf.tractate.start_page:
         paragraphs.append(f"📕 Tractate {daf.tractate} ({book['heTitle']})")
 
-    paragraphs.append(f"🗓️ <b>{d.strftime('%-d %b %Y')} - {daf}</b>")
+    hebrew_date = pyluach.dates.GregorianDate.from_pydate(d).to_heb()
+    assert hebrew_date is not None
+    header_lines = [
+        f"🗓️ {d.strftime('%B %-d %Y')} / {hebrew_date.month_name()} {hebrew_date.day} {hebrew_date.year}"
+    ]
+    festival = hebrew_date.festival(prefix_day=True)
+    if festival:
+        header_lines.append("🎉" + festival)
+    header_lines.append(f"\n<b>{daf}</b>")
+
+    paragraphs.append("\n".join(header_lines))
     for subpage in ("a", "b"):
         url = daf.url(subpage)  # type: ignore
         paragraphs.append(f'📜 <a href="{url}">{daf.page}{subpage}</a>')
@@ -68,7 +79,7 @@ async def main() -> None:
     channel_id = os.environ["CHANNEL_ID"]
     d = date.today()
     print(f"Reading daf for today: {d}")
-    message_texts = format_daf(date.today())
+    message_texts = format_daf(d)
     print(f"Sending daf: {message_texts[0][:128]}...")
     for text in message_texts:
         for text_part in smart_split(text):

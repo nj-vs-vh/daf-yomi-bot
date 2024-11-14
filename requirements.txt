@@ -1,2 +1,3 @@
 beautifulsoup4==4.12.3
 telebot-against-war==0.7.5
+pyluach==2.2.0
