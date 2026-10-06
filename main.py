@@ -1,3 +1,4 @@
+import argparse
 import asyncio
 import os
 from datetime import date
@@ -74,10 +75,7 @@ def format_daf(d: date) -> list[str]:
     return messages
 
 
-async def main() -> None:
-    bot = AsyncTeleBot(token=os.environ["TOKEN"])
-    channel_id = os.environ["CHANNEL_ID"]
-    d = date.today()
+async def send_daf(d: date, bot: AsyncTeleBot, channel_id: str) -> None:
     print(f"Reading daf for today: {d}")
     message_texts = format_daf(d)
     print(f"Sending daf: {message_texts[0][:128]}...")
@@ -91,6 +89,16 @@ async def main() -> None:
             )
             await asyncio.sleep(1)
     print("Done!")
+
+
+async def main() -> None:
+    bot = AsyncTeleBot(token=os.environ["TOKEN"])
+    channel_id = os.environ["CHANNEL_ID"]
+    await send_daf(
+        d=date.today(),
+        bot=bot,
+        channel_id=channel_id,
+    )
 
 
 if __name__ == "__main__":
